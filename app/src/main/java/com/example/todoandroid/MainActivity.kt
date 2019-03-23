@@ -3,10 +3,12 @@ package com.example.todoandroid
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.format.DateFormat
+import android.util.Log
 import android.widget.TextView
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.serialization.json.Json
 import java.net.Socket
 import java.nio.charset.Charset
 import java.util.*
@@ -15,7 +17,10 @@ import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
-    val scheduler = Executors.newSingleThreadScheduledExecutor()
+
+    // TODO add data class
+    // TODO add serialization from kotlinx
+    // TODO configuration page
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,7 +31,7 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
 
         Observable.create<String> { subscriber ->
-            scheduler.scheduleAtFixedRate({
+            Executors.newSingleThreadScheduledExecutor()!!.scheduleAtFixedRate({
                 val socket = Socket("192.168.1.7", 12321)
                 val inputReader = socket.getInputStream()
                 subscriber.onNext(inputReader.readBytes().toString(Charset.defaultCharset()))
@@ -35,18 +40,28 @@ class MainActivity : AppCompatActivity() {
         }.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnNext {
-                updateView(it)
+                val parsedData = parseData(it)
+                updateView(parsedData)
             }
-            .doOnError {  }
+            .doOnError { }
             .subscribe()
 
     }
 
+    private fun parseData(data: String): ToDoItem {
+        Log.d("derp", ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        println(data)
+        return Json.parse(ToDoItem.serializer(), data)
+    }
 
-    private fun updateView(value: String) {
-        val textView = findViewById<TextView>(R.id.dataDisplay)
-        val dateTime = DateFormat.format("yyyy MM dd hh:mm:ss", Date(value.toLong())).toString()
-        textView.text = dateTime
+    private fun updateView(data: ToDoItem) {
+
+        val taskNameDisplay = findViewById<TextView>(R.id.taskNameDisplay)
+        taskNameDisplay.text = data.taskName
+        
+        val timeView = findViewById<TextView>(R.id.dataDisplay)
+        val dateTime = DateFormat.format("yyyy MM dd hh:mm:ss", Date(data.createdMillis)).toString()
+        timeView.text = dateTime
     }
 
 }
