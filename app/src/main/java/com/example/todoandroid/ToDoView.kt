@@ -38,7 +38,7 @@ class ToDoView: LinearLayout {
         taskDetailDisplay.text = toDoItem.taskDetail
 
         val timeView = myListView.findViewById<TextView>(R.id.taskCreatedDisplay)
-        val dateTime = DateFormat.format("yyyy-MM-dd hh:mm:ss", Date(toDoItem.createdMillis)).toString()
+        val dateTime = DateFormat.format("yyyy-MM-dd hh:mm", Date(toDoItem.createdMillis)).toString()
         val composed = resources.getString(R.string.task_created_time_default) + " " + dateTime
         timeView.text =  composed
 

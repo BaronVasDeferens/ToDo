@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Vibrator
 import android.support.v7.app.AppCompatActivity
+import android.widget.ImageView
 import android.widget.LinearLayout
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -60,9 +61,17 @@ class MainActivity : AppCompatActivity() {
         toDoList.forEach { data ->
             val taskView = ToDoView(this, mainDisplay, data).getListView()
 
-            taskView.setOnLongClickListener {
+            taskView.findViewById<LinearLayout>(R.id.taskPrimaryLayout)
+                .setOnLongClickListener {
                 val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                 vibrator.vibrate(200)
+                true
+            }
+
+            taskView.findViewById<LinearLayout>(R.id.taskSecondaryLayout)
+                .setOnLongClickListener {
+                val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                vibrator.vibrate(500)
                 true
             }
 
