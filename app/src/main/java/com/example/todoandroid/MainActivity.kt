@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Vibrator
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -26,11 +27,44 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         toDoItemViewModel = ViewModelProviders.of(this).get(ToDoItemViewModel::class.java)
+
+        // Observer on the ViewMOdel/LiveData
+        // Updates the UI
+        val toDoListObserver = Observer<List<ToDoItem>> {
+
+            val mainDisplay = findViewById<LinearLayout>(R.id.mainDisplay)
+            mainDisplay.removeAllViews()
+
+            toDoItemViewModel.toDoItems.value?.forEach { data ->
+                val taskView = ToDoView(this, mainDisplay, data).getListView()
+
+                taskView.findViewById<LinearLayout>(R.id.taskPrimaryLayout)
+                    .setOnLongClickListener {
+                        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                        vibrator.vibrate(200)
+                        true
+                    }
+
+                taskView.findViewById<LinearLayout>(R.id.taskSecondaryLayout)
+                    .setOnLongClickListener {
+                        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                        vibrator.vibrate(500)
+                        true
+                    }
+
+                mainDisplay.addView(taskView)
+            }
+        }
+
+        toDoItemViewModel.toDoItems.observe(this, toDoListObserver)
     }
 
     override fun onStart() {
         super.onStart()
 
+        // RxJava
+        // Fires a regularly repeating request to the server for data
+        // and pushes data to the ViewModel for this activity
         Observable.create<String> { subscriber ->
             Executors.newSingleThreadScheduledExecutor()!!.scheduleAtFixedRate({
                 val socket = Socket("192.168.1.7", 12321)
@@ -41,8 +75,7 @@ class MainActivity : AppCompatActivity() {
         }.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnNext {
-                val parsedData = parseData(it)
-                updateView(parsedData)
+                toDoItemViewModel.toDoItems.postValue(parseData(it))
             }
             .doOnError {
 
