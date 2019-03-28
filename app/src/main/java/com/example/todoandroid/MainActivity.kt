@@ -3,9 +3,9 @@ package com.example.todoandroid
 import android.content.Context
 import android.os.Bundle
 import android.os.Vibrator
-import android.support.v7.app.AppCompatActivity
-import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProviders
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -18,12 +18,14 @@ import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var toDoItemViewModel: ToDoItemViewModel
 
     // TODO configuration page
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        toDoItemViewModel = ViewModelProviders.of(this).get(ToDoItemViewModel::class.java)
     }
 
     override fun onStart() {
