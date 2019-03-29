@@ -37,24 +37,32 @@ class MainActivity : AppCompatActivity() {
 
             toDoItemViewModel.toDoItems.value
                 ?.sortedWith( compareBy { toDoItemViewModel.urgencyValueMap[it.taskUrgency] })
-                ?.forEach { data ->
-                val taskView = ToDoView(this, mainDisplay, data).getListView()
+                ?.forEach { toDoItem ->
+                val toDoView = ToDoView(this, mainDisplay, toDoItem)
+                    val itemView = toDoView.getListView()
+                    val detailView = toDoView.getDetailView(this)
 
-                taskView.findViewById<LinearLayout>(R.id.taskPrimaryLayout)
+
+                    itemView.findViewById<LinearLayout>(R.id.taskPrimaryLayout)
                     .setOnLongClickListener {
                         val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                         vibrator.vibrate(200)
+
+                        val detailFragment = ToDoItemDetailFragment()
+                        detailFragment.setData(toDoItem, detailView)
+                        detailFragment.show(supportFragmentManager, "DERP")
+
                         true
                     }
 
-                taskView.findViewById<LinearLayout>(R.id.taskSecondaryLayout)
+                    itemView.findViewById<LinearLayout>(R.id.taskSecondaryLayout)
                     .setOnLongClickListener {
                         val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                         vibrator.vibrate(500)
                         true
                     }
 
-                mainDisplay.addView(taskView)
+                mainDisplay.addView(itemView)
             }
         }
 

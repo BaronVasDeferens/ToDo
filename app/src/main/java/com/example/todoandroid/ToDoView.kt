@@ -1,6 +1,7 @@
 package com.example.todoandroid
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.text.format.DateFormat
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -19,7 +20,6 @@ class ToDoView: LinearLayout {
 
     private lateinit var toDoItem: ToDoItem
     private lateinit var myListView: View           // View as a item in a list
-    private lateinit var myDetailView: View
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet): super(context, attrs)
@@ -43,11 +43,7 @@ class ToDoView: LinearLayout {
         timeView.text =  composed
 
         val taskUrgencyIndicator = myListView.findViewById<LinearLayout>(R.id.taskUrgencyIndicator)
-        taskUrgencyIndicator.background = when (toDoItem.taskUrgency) {
-            ToDoItem.TaskUrgency.HIGH -> resources.getDrawable(taskUrgencyHigh, null)
-            ToDoItem.TaskUrgency.MEDIUM -> resources.getDrawable(taskUrgencyMedium, null)
-            ToDoItem.TaskUrgency.LOW -> resources.getDrawable(taskUrgencyLow, null)
-        }
+        taskUrgencyIndicator.background = getUrgencyColor(toDoItem.taskUrgency)
 
         val taskUrgencyIcon = myListView.findViewById<ImageView>(R.id.taskUrgencyIcon)
         val iconContent = when (toDoItem.taskType) {
@@ -55,18 +51,35 @@ class ToDoView: LinearLayout {
             ToDoItem.TaskType.SHOPPING -> R.drawable.icon_shoppingcart
         }
 
-        taskUrgencyIcon.background =  context.getDrawable(iconContent)
+        taskUrgencyIcon.background = context.getDrawable(iconContent)
 
-
-        // Create and adjust the detail view
-        // TODO
     }
 
     fun getListView(): View {
         return myListView
     }
 
-    fun getDetailView() {
+    fun getDetailView(context: Context, viewGroup: ViewGroup? = null): View {
+        val inflater = LayoutInflater.from(context)
+        val detailView: View = inflater.inflate(R.layout.todo_detail_view, viewGroup, false)
 
+        val taskName = detailView.findViewById<TextView>(R.id.taskNameDisplay)
+        taskName.text = toDoItem.taskName
+        taskName.background = getUrgencyColor(toDoItem.taskUrgency)
+
+        val dateTime = DateFormat.format("yyyy-MM-dd hh:mm", Date(toDoItem.createdMillis)).toString()
+        detailView.findViewById<TextView>(R.id.taskCreatedDisplay).text = dateTime
+
+        detailView.findViewById<TextView>(R.id.taskDetailDisplay).text = toDoItem.taskDetail
+
+        return detailView
+    }
+
+    private fun getUrgencyColor(taskUrgency: ToDoItem.TaskUrgency): Drawable {
+        return when (toDoItem.taskUrgency) {
+            ToDoItem.TaskUrgency.HIGH -> resources.getDrawable(taskUrgencyHigh, null)
+            ToDoItem.TaskUrgency.MEDIUM -> resources.getDrawable(taskUrgencyMedium, null)
+            ToDoItem.TaskUrgency.LOW -> resources.getDrawable(taskUrgencyLow, null)
+        }
     }
 }
