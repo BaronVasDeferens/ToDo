@@ -28,14 +28,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         toDoItemViewModel = ViewModelProviders.of(this).get(ToDoItemViewModel::class.java)
 
-        // Observer on the ViewMOdel/LiveData
-        // Updates the UI
+        // Observer on the ViewModel/LiveData
+        // Updates the UI when
         val toDoListObserver = Observer<List<ToDoItem>> {
 
             val mainDisplay = findViewById<LinearLayout>(R.id.mainDisplay)
             mainDisplay.removeAllViews()
 
-            toDoItemViewModel.toDoItems.value?.forEach { data ->
+            toDoItemViewModel.toDoItems.value
+                ?.sortedWith( compareBy { toDoItemViewModel.urgencyValueMap[it.taskUrgency] })
+                ?.forEach { data ->
                 val taskView = ToDoView(this, mainDisplay, data).getListView()
 
                 taskView.findViewById<LinearLayout>(R.id.taskPrimaryLayout)
@@ -56,6 +58,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Watch the list of items and update the views as they cahnge
         toDoItemViewModel.toDoItems.observe(this, toDoListObserver)
     }
 
@@ -87,32 +90,4 @@ class MainActivity : AppCompatActivity() {
     private fun parseData(data: String): List<ToDoItem> {
         return Json.parse(ToDoItem.serializer().list, data)
     }
-
-    private fun updateView(toDoList: List<ToDoItem>) {
-
-        val mainDisplay = findViewById<LinearLayout>(R.id.mainDisplay)
-        mainDisplay.removeAllViews()
-
-        toDoList.forEach { data ->
-            val taskView = ToDoView(this, mainDisplay, data).getListView()
-
-            taskView.findViewById<LinearLayout>(R.id.taskPrimaryLayout)
-                .setOnLongClickListener {
-                val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                vibrator.vibrate(200)
-                true
-            }
-
-            taskView.findViewById<LinearLayout>(R.id.taskSecondaryLayout)
-                .setOnLongClickListener {
-                val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                vibrator.vibrate(500)
-                true
-            }
-
-            mainDisplay.addView(taskView)
-        }
-
-    }
-
 }
