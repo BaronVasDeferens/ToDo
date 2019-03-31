@@ -11,31 +11,20 @@
             android:id="@+id/filterBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/gold"
             android:orientation="horizontal"
             android:gravity="center"
+
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-        <Button
-                android:id="@+id/sortByDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="?android:attr/buttonBarButtonStyle"
-                android:text="Sort by Date"/>
 
-        <Button
-                android:id="@+id/sortByUrgency"
+        <TextView
+                android:id="@+id/lastUpdated"
+                android:text="@string/lastUpdated"
+                android:textSize="15dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Sort by Urgency"/>
-
-        <Button
-                android:id="@+id/sortByType"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Sort by Type"/>
+                android:layout_height="wrap_content"/>
     </LinearLayout>
 
     <LinearLayout

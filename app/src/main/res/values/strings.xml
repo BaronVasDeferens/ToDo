@@ -3,4 +3,5 @@
     <string name="task_title_default">Uninitialized</string>
     <string name="task_created_time_default">Created on:</string>
     <string name="task_description_default">No description</string>
+    <string name="lastUpdated">Last updated: </string>
 </resources>

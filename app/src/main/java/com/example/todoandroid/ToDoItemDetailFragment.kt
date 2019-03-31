@@ -7,7 +7,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.DialogFragment
 
-class ToDoItemDetailFragment(): DialogFragment() {
+class ToDoItemDetailFragment: DialogFragment() {
 
     private lateinit var toDoItem: ToDoItem
     private lateinit var detailView: View
