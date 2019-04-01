@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Vibrator
 import android.text.format.DateFormat
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -13,6 +14,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.list
 import java.net.Socket
 import java.nio.charset.Charset
 import java.util.*
@@ -32,10 +34,12 @@ class MainActivity : AppCompatActivity() {
 
 
         // Observer on the ViewModel/LiveData
-        // Updates the UI when
+        // Updates the UI when changes to the data are detected
         val toDoListObserver = Observer<List<ToDoItem>> {
 
             val mainDisplay = findViewById<LinearLayout>(R.id.mainDisplay)
+
+            // TODO removing all is unnecessary...
             mainDisplay.removeAllViews()
 
             toDoItemViewModel.toDoItems.value
@@ -46,7 +50,9 @@ class MainActivity : AppCompatActivity() {
                     val detailView = toDoView.getDetailView(this)
 
                     itemView.findViewById<LinearLayout>(R.id.taskPrimaryLayout)
-                    .setOnLongClickListener {
+
+                        // TODO change to onTouchListeners...
+                        .setOnClickListener {
                         val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                         vibrator.vibrate(200)
 
@@ -58,7 +64,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     itemView.findViewById<LinearLayout>(R.id.taskSecondaryLayout)
-                    .setOnLongClickListener {
+                    .setOnClickListener {
                         val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                         vibrator.vibrate(500)
                         true
@@ -104,7 +110,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateLastUpdatedTime(millis: Long) {
         val dateTime = DateFormat.format("yyyy-MM-dd hh:mm:ss", Date(millis)).toString()
-        val completedString = resources.getString(R.string.lastUpdated) + " " + dateTime
+        val completedString = resources.getString(R.string.lastSync) + " " + dateTime
         findViewById<TextView>(R.id.lastUpdated).text = completedString
+    }
+
+    fun addItem(view: View) {
+
+        // TODO launch modal
+
+        toDoItemViewModel.addOrUpdateToDoItem(ToDoItem(
+            UUID.randomUUID().toString(),
+            "Test",
+            "This is a test",
+            ToDoItem.TaskType.TASK,
+            ToDoItem.TaskUrgency.MEDIUM,
+            System.currentTimeMillis()))
     }
 }

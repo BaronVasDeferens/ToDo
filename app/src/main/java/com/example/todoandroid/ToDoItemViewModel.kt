@@ -4,9 +4,10 @@ package com.example.todoandroid
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class ToDoItemViewModel: ViewModel() {
+class ToDoItemViewModel : ViewModel() {
 
     val urgencyValueMap = HashMap<ToDoItem.TaskUrgency, Int>()
+    private val idToItemMap = HashMap<String, ToDoItem>()
 
     val toDoItems = MutableLiveData<List<ToDoItem>>()
 
@@ -21,7 +22,24 @@ class ToDoItemViewModel: ViewModel() {
     }
 
     fun updateValues(newList: List<ToDoItem>) {
-        toDoItems.postValue(newList)
+
+        newList.forEach { newItem ->
+            val oldItem = idToItemMap[newItem.taskId]
+            if (oldItem == null) {
+                idToItemMap[newItem.taskId] = newItem
+            }
+        }
+        toDoItems.postValue(idToItemMap.values.toList())
+    }
+
+    fun addOrUpdateToDoItem(newItem: ToDoItem) {
+
+        val existingItem = idToItemMap[newItem.taskId]
+        if (existingItem == null) {
+            idToItemMap[newItem.taskId] = newItem
+        }
+
+        toDoItems.postValue(idToItemMap.values.toList())
     }
 
 }

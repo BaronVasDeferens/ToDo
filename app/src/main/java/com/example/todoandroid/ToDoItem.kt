@@ -11,7 +11,7 @@ data class ToDoItem(
     val taskType: TaskType = TaskType.TASK,
     val taskUrgency: TaskUrgency = TaskUrgency.MEDIUM,
     val createdMillis: Long,
-    val completedMillis: Long = 0L
+    var completedMillis: Long = 0L
 ) {
 
     enum class TaskType {
@@ -23,5 +23,9 @@ data class ToDoItem(
         LOW,
         MEDIUM,
         HIGH
+    }
+
+    fun markCompleted() {
+        completedMillis = System.currentTimeMillis()
     }
 }
