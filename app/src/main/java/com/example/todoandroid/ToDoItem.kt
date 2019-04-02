@@ -24,8 +24,4 @@ data class ToDoItem(
         MEDIUM,
         HIGH
     }
-
-    fun markCompleted() {
-        completedMillis = System.currentTimeMillis()
-    }
 }

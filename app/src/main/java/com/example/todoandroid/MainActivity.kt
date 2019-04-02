@@ -94,7 +94,9 @@ class MainActivity : AppCompatActivity() {
         }.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnNext {
-                toDoItemViewModel.updateValues(parseData(it))
+                synchronized(toDoItemViewModel) {
+                    toDoItemViewModel.updateValues(parseData(it))
+                }
                 updateLastUpdatedTime(System.currentTimeMillis())
             }
             .doOnError {
@@ -118,12 +120,29 @@ class MainActivity : AppCompatActivity() {
 
         // TODO launch modal
 
-        toDoItemViewModel.addOrUpdateToDoItem(ToDoItem(
-            UUID.randomUUID().toString(),
-            "Test",
-            "This is a test",
-            ToDoItem.TaskType.TASK,
-            ToDoItem.TaskUrgency.MEDIUM,
-            System.currentTimeMillis()))
+
+        Executors.newSingleThreadExecutor()!!.execute {
+
+            synchronized(toDoItemViewModel) {
+                toDoItemViewModel.addOrUpdateToDoItem(ToDoItem(
+                    UUID.randomUUID().toString(),
+                    "Test",
+                    "This is a test",
+                    ToDoItem.TaskType.TASK,
+                    ToDoItem.TaskUrgency.MEDIUM,
+                    System.currentTimeMillis()))
+
+
+                val socket = Socket("192.168.1.7", 12322)
+                val outputStream = socket.getOutputStream()
+                val payloadContent = Json.stringify(ToDoItem.serializer().list, toDoItemViewModel.toDoItems.value!!)
+                outputStream.write(payloadContent.toByteArray())
+                socket.close()
+            }
+
+
+        }
+
+
     }
 }
