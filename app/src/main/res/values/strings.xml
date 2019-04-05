@@ -4,5 +4,12 @@
     <string name="task_created_time_default">Created on:</string>
     <string name="task_description_default">No description</string>
     <string name="lastSync">Last sync: </string>
-    <string name="addItem">Add Item</string>
+    <string name="newToDoItem">New ToDo Item</string>
+    <string name="addItemAndFinish">Done</string>
+    <string name="addItemNameHint">Add a name</string>
+    <string name="addItemDescHint">Description or details</string>
+    <string name="taskTypeLabel">Type:</string>
+    <string name="urgencyLabel">Urgency:</string>
+    <string name="addItemAndNext">Add Another</string>
+    <string name="cancel">Cancel</string>
 </resources>

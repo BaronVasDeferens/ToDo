@@ -21,7 +21,7 @@ import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
 
     private lateinit var toDoItemViewModel: ToDoItemViewModel
 
@@ -53,14 +53,14 @@ class MainActivity : AppCompatActivity() {
 
                         // TODO change to onTouchListeners...
                         .setOnClickListener {
-                        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                        vibrator.vibrate(200)
+                            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                            vibrator.vibrate(200)
 
-                        val detailFragment = ToDoItemDetailFragment()
-                        detailFragment.setData(toDoItem, detailView)
-                        detailFragment.show(supportFragmentManager, "DERP")
+                            val detailFragment = ToDoItemDetailFragment()
+                            detailFragment.setData(toDoItem, detailView)
+                            detailFragment.show(supportFragmentManager, "DERP")
 
-                        true
+                            true
                     }
 
                     itemView.findViewById<LinearLayout>(R.id.taskSecondaryLayout)
@@ -117,32 +117,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun addItem(view: View) {
+        val createNewItemFragment = CreateNewItemFragment()
+        createNewItemFragment.setOnItemCreatedListener(this)
+        createNewItemFragment.show(supportFragmentManager, "DERP")
+    }
 
-        // TODO launch modal
+    override fun onNewItemCreated(newItem: ToDoItem) {
+        sendDataToServer(newItem)
+    }
 
-
+    fun sendDataToServer(newItem: ToDoItem) {
         Executors.newSingleThreadExecutor()!!.execute {
-
             synchronized(toDoItemViewModel) {
-                toDoItemViewModel.addOrUpdateToDoItem(ToDoItem(
-                    UUID.randomUUID().toString(),
-                    "Test",
-                    "This is a test",
-                    ToDoItem.TaskType.TASK,
-                    ToDoItem.TaskUrgency.MEDIUM,
-                    System.currentTimeMillis()))
-
-
+                toDoItemViewModel.addOrUpdateToDoItem(newItem)
                 val socket = Socket("192.168.1.7", 12322)
                 val outputStream = socket.getOutputStream()
                 val payloadContent = Json.stringify(ToDoItem.serializer().list, toDoItemViewModel.toDoItems.value!!)
                 outputStream.write(payloadContent.toByteArray())
                 socket.close()
             }
-
-
         }
-
-
     }
 }

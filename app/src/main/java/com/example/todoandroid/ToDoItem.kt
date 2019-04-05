@@ -16,7 +16,7 @@ data class ToDoItem(
 
     enum class TaskType {
         TASK,
-        SHOPPING
+        SHOPPING;
     }
 
     enum class TaskUrgency {
@@ -24,4 +24,6 @@ data class ToDoItem(
         MEDIUM,
         HIGH
     }
+
+
 }
