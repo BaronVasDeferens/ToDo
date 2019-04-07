@@ -25,5 +25,10 @@ data class ToDoItem(
         HIGH
     }
 
+    fun markCompleted() {
+        completedMillis = System.currentTimeMillis()
+        println(">>> task $taskName COMPLETE ON $completedMillis")
+    }
+
 
 }

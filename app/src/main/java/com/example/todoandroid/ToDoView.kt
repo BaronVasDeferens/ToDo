@@ -12,23 +12,16 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import java.util.*
 
-private val taskUrgencyHigh = R.color.red
-private val taskUrgencyMedium = R.color.gold
-private val taskUrgencyLow = R.color.blue_light
+private const val taskUrgencyHigh = R.color.red
+private const val taskUrgencyMedium = R.color.gold
+private const val taskUrgencyLow = R.color.blue_light
 
-class ToDoView: LinearLayout {
+class ToDoView(private val toDoItem: ToDoItem) {
 
-    private lateinit var toDoItem: ToDoItem
-    private lateinit var myListView: View           // View as a item in a list
+    fun getListView(context: Context, viewGroup: ViewGroup): View {
 
-    constructor(context: Context) : super(context)
-    constructor(context: Context, attrs: AttributeSet): super(context, attrs)
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int): super(context, attrs, defStyleAttr)
-
-    constructor(context: Context, viewGroup: ViewGroup, toDoItem: ToDoItem): super(context) {
-        this.toDoItem = toDoItem
         val inflater = LayoutInflater.from(context)
-        myListView = inflater.inflate(R.layout.todo_view, viewGroup, false)
+        val myListView: View = inflater.inflate(R.layout.todo_view, viewGroup, false)
 
         // Create and adjust the list view
         val taskNameDisplay = myListView.findViewById<TextView>(R.id.taskNameDisplay)
@@ -39,11 +32,11 @@ class ToDoView: LinearLayout {
 
         val timeView = myListView.findViewById<TextView>(R.id.taskCreatedDisplay)
         val dateTime = DateFormat.format("yyyy-MM-dd hh:mm", Date(toDoItem.createdMillis)).toString()
-        val composed = resources.getString(R.string.task_created_time_default) + " " + dateTime
+        val composed = context.resources.getString(R.string.task_created_time_default) + " " + dateTime
         timeView.text =  composed
 
         val taskUrgencyIndicator = myListView.findViewById<LinearLayout>(R.id.taskUrgencyIndicator)
-        taskUrgencyIndicator.background = getUrgencyColor(toDoItem.taskUrgency)
+        taskUrgencyIndicator.background = getUrgencyColor(context, toDoItem.taskUrgency)
 
         val taskUrgencyIcon = myListView.findViewById<ImageView>(R.id.taskUrgencyIcon)
         val iconContent = when (toDoItem.taskType) {
@@ -53,19 +46,20 @@ class ToDoView: LinearLayout {
 
         taskUrgencyIcon.background = context.getDrawable(iconContent)
 
-    }
+        if (toDoItem.completedMillis > 0) {
+            myListView.findViewById<ImageView>(R.id.checkmark).visibility = View.VISIBLE
+        }
 
-    fun getListView(): View {
         return myListView
     }
 
-    fun getDetailView(context: Context, viewGroup: ViewGroup? = null): View {
+    fun getDetailView(context: Context): View {
         val inflater = LayoutInflater.from(context)
-        val detailView: View = inflater.inflate(R.layout.todo_detail_view, viewGroup, false)
+        val detailView: View = inflater.inflate(R.layout.todo_detail_view, null, false)
 
         val taskName = detailView.findViewById<TextView>(R.id.taskNameDisplay)
         taskName.text = toDoItem.taskName
-        taskName.background = getUrgencyColor(toDoItem.taskUrgency)
+        taskName.background = getUrgencyColor(context, toDoItem.taskUrgency)
 
         val dateTime = DateFormat.format("yyyy-MM-dd hh:mm", Date(toDoItem.createdMillis)).toString()
         detailView.findViewById<TextView>(R.id.taskCreatedDisplay).text = dateTime
@@ -75,11 +69,11 @@ class ToDoView: LinearLayout {
         return detailView
     }
 
-    private fun getUrgencyColor(taskUrgency: ToDoItem.TaskUrgency): Drawable {
+    private fun getUrgencyColor(context: Context, taskUrgency: ToDoItem.TaskUrgency): Drawable {
         return when (toDoItem.taskUrgency) {
-            ToDoItem.TaskUrgency.HIGH -> resources.getDrawable(taskUrgencyHigh, null)
-            ToDoItem.TaskUrgency.MEDIUM -> resources.getDrawable(taskUrgencyMedium, null)
-            ToDoItem.TaskUrgency.LOW -> resources.getDrawable(taskUrgencyLow, null)
+            ToDoItem.TaskUrgency.HIGH -> context.resources.getDrawable(taskUrgencyHigh, null)
+            ToDoItem.TaskUrgency.MEDIUM -> context.resources.getDrawable(taskUrgencyMedium, null)
+            ToDoItem.TaskUrgency.LOW -> context.resources.getDrawable(taskUrgencyLow, null)
         }
     }
 }

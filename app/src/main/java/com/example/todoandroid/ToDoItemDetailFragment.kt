@@ -4,32 +4,39 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.ViewModelProviders
 
 class ToDoItemDetailFragment : DialogFragment() {
 
     private lateinit var toDoItem: ToDoItem
-    private lateinit var detailView: View
 
-    fun setData(toDoItem: ToDoItem, detailView: View) {
+    fun setData(toDoItem: ToDoItem) {
         this.toDoItem = toDoItem
-        this.detailView = detailView
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val alertDialog = activity?.let {
+
+        val detailView: View = ToDoView(toDoItem).getDetailView(context!!)
+
+        detailView.findViewById<Button>(R.id.cancelButton).setOnClickListener {
+            dismiss()
+        }
+
+        detailView.findViewById<Button>(R.id.completeTaskButton).setOnClickListener {
+            toDoItem.markCompleted()
+//            toDoItemViewModel.addOrUpdateToDoItem(toDoItem)
+            dismiss()
+        }
+
+        return activity?.let {
             val builder = AlertDialog.Builder(it)
             builder.setView(detailView)
-//                .setPositiveButton("Yep", DialogInterface.OnClickListener { dialog, id ->
-//                    // FIRE ZE MISSILES!
-//                })
-//                .setNegativeButton("Nope", DialogInterface.OnClickListener { dialog, id ->
-//                    // FIRE ZE MISSILES!
-//                })
+
             builder.create()
         } ?: throw IllegalStateException("AW FUCK")
-
-
-        return alertDialog
     }
+
+
 }

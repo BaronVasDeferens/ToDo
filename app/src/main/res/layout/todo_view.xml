@@ -72,11 +72,13 @@
                 android:layout_weight=".75">
 
             <ImageView
-                    android:id="@+id/taskComplete"
+                    android:id="@+id/checkmark"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/icon_checkmark"/>
+                    android:src="@drawable/icon_checkmark"
+                    android:visibility="invisible"
+            />
 
 
         </LinearLayout>

@@ -33,4 +33,41 @@
             android:text="@string/task_description_default"
             android:textSize="15dp"/>
 
+    <View android:layout_width="match_parent" android:layout_height="25dp"></View>
+
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:gravity="left">
+
+
+        <Button
+                android:id="@+id/cancelButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/cancel"
+        />
+
+        <LinearLayout android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="horizontal"
+                      android:gravity="right">
+
+            <Button
+                    android:id="@+id/completeTaskButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/taskCompleteButtonLabel"
+            />
+
+        </LinearLayout>
+
+
+
+
+
+
+
+    </LinearLayout>
+
 </LinearLayout>

@@ -13,6 +13,7 @@ class ToDoItemViewModel : ViewModel() {
 
     init {
         toDoItems.value = listOf()
+        idToItemMap.clear()
 
         // Urgency Values
         // Allow the HIGH urgency tasks to rise to the top
@@ -21,24 +22,50 @@ class ToDoItemViewModel : ViewModel() {
         urgencyValueMap[ToDoItem.TaskUrgency.LOW] = 3
     }
 
+    /**
+     * Receives a list (from server)
+     */
     fun updateValues(newList: List<ToDoItem>) {
 
-        newList.forEach { newItem ->
-            val oldItem = idToItemMap[newItem.taskId]
-            if (oldItem == null) {
-                idToItemMap[newItem.taskId] = newItem
-            }
+        var requiresUpdate = false
+        for(item: ToDoItem in newList) {
+            // careful! short-circuit! put method first
+            requiresUpdate = addOrUpdateToDoItem(item) || requiresUpdate
         }
-        toDoItems.postValue(idToItemMap.values.toList())
+
+        if (requiresUpdate){
+            postUpdate()
+        }
     }
 
-    fun addOrUpdateToDoItem(newItem: ToDoItem) {
+
+    /**
+     * Searches data for an item with a matching item id
+     * Returns true if the new item is inserted or overwrites an existing value
+     */
+    fun addOrUpdateToDoItem(newItem: ToDoItem): Boolean {
 
         val existingItem = idToItemMap[newItem.taskId]
+
         if (existingItem == null) {
-            idToItemMap[newItem.taskId] = newItem
+            addItem(newItem)
+            println(">>> adding: ${newItem.taskName}")
+            return true
+        } else if (newItem != existingItem) {
+            if (newItem.completedMillis > existingItem.completedMillis) {
+                addItem(newItem)
+                return true
+            }
         }
 
+        return false
+    }
+
+    private fun addItem(newItem: ToDoItem) {
+        idToItemMap[newItem.taskId] = newItem
+    }
+
+    fun postUpdate() {
         toDoItems.postValue(idToItemMap.values.toList())
     }
 
