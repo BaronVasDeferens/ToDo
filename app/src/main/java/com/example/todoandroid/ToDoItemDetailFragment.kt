@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProviders
 
 class ToDoItemDetailFragment : DialogFragment() {
 

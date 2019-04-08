@@ -42,13 +42,13 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
 
         // Observer on the ViewModel/LiveData
         // Updates the UI when changes to the data are detected
-        val toDoListObserver = Observer<List<ToDoItem>> {
+        val toDoListObserver = Observer<Boolean> {
 
             val mainDisplay = findViewById<LinearLayout>(R.id.mainDisplay)
 
             mainDisplay.removeAllViews()
 
-            toDoItemViewModel.toDoItems.value
+            toDoItemViewModel.getToDoItems()
                 ?.sortedWith(compareBy { toDoItemViewModel.urgencyValueMap[it.taskUrgency] })
                 ?.forEach { toDoItem ->
                     val toDoView = ToDoView(toDoItem)
@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
         }
 
         // Watch the list of items and update the views as they change
-        toDoItemViewModel.toDoItems.observe(this, toDoListObserver)
+        toDoItemViewModel.updateRequired.observe(this, toDoListObserver)
 
 
         // RxJava
@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
             .observeOn(AndroidSchedulers.mainThread())
             .doOnNext {
                 synchronized(toDoItemViewModel) {
-                    toDoItemViewModel.updateValues(parseData(it))
+                    toDoItemViewModel.addOrUpdateItems(parseData(it))
                 }
                 updateLastUpdatedTime(System.currentTimeMillis())
             }
@@ -119,11 +119,8 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
     }
 
     override fun onNewItemCreated(newItem: ToDoItem) {
-        synchronized(toDoItemViewModel) {
-            toDoItemViewModel.addOrUpdateToDoItem(newItem)
-            toDoItemViewModel.postUpdate()
-            sendDataToServer()
-        }
+        toDoItemViewModel.addOrUpdateItems(listOf(newItem))
+        sendDataToServer()
     }
 
     fun sendDataToServer() {
@@ -131,7 +128,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
             synchronized(toDoItemViewModel) {
                 val socket = Socket("192.168.1.7", 12322)
                 val outputStream = socket.getOutputStream()
-                val payloadContent = Json.stringify(ToDoItem.serializer().list, toDoItemViewModel.toDoItems.value!!)
+                val payloadContent = Json.stringify(ToDoItem.serializer().list, toDoItemViewModel.getToDoItems())
                 outputStream.write(payloadContent.toByteArray())
                 socket.close()
             }

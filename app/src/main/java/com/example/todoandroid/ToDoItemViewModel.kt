@@ -5,16 +5,16 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class ToDoItemViewModel : ViewModel() {
-
-    private val idToItemMap = HashMap<String, ToDoItem>()
     val urgencyValueMap = HashMap<ToDoItem.TaskUrgency, Int>()
 
 
-    val toDoItems = MutableLiveData<List<ToDoItem>>()
+    private val idToItemMap = HashMap<String, ToDoItem>()
+    var updateRequired: MutableLiveData<Boolean> = MutableLiveData()
 
     init {
-        toDoItems.value = listOf()
+
         idToItemMap.clear()
+        updateRequired.postValue(false)
 
         // Urgency Values
         // Allow the HIGH urgency tasks to rise to the top
@@ -23,49 +23,33 @@ class ToDoItemViewModel : ViewModel() {
         urgencyValueMap[ToDoItem.TaskUrgency.LOW] = 3
     }
 
-    /**
-     * Receives a list (from server)
-     */
-    fun updateValues(newList: List<ToDoItem>) {
-
-        var requiresUpdate = false
-        for (item: ToDoItem in newList) {
-            // careful! short-circuit! put method first
-            requiresUpdate = addOrUpdateToDoItem(item) || requiresUpdate
-        }
-
-        if (requiresUpdate) {
-            postUpdate()
-        }
+    fun getToDoItems(): List<ToDoItem> {
+        return idToItemMap.values.map { it.copy() }.toList()
     }
-
 
     /**
      * Searches data for an item with a matching item id
      * Returns true if the new item is inserted or overwrites an existing value
      */
-    fun addOrUpdateToDoItem(newItem: ToDoItem): Boolean {
+    fun addOrUpdateItems(items: List<ToDoItem>) {
+        for (item in items) {
+            val existingItem: ToDoItem? = idToItemMap[item.taskId]
 
-        val existingItem: ToDoItem? = idToItemMap[newItem.taskId]
-
-        if (existingItem == null) {
-            addItem(newItem)
-            println(">>> adding: ${newItem.taskName}")
-            return true
-        } else if (newItem.completedMillis > existingItem.completedMillis) {
-            addItem(newItem)
-            return true
+            if (existingItem == null) {
+                addItem(item)
+                println(">>> adding: ${item.taskName}")
+            } else if (item.completedMillis > existingItem.completedMillis) {
+                addItem(item)
+            }
         }
-
-        return false
     }
 
     private fun addItem(newItem: ToDoItem) {
-        idToItemMap[newItem.taskId] = newItem
+        synchronized(idToItemMap) {
+            idToItemMap[newItem.taskId] = newItem
+            updateRequired.postValue(true)
+        }
     }
 
-    fun postUpdate() {
-        toDoItems.postValue(idToItemMap.values.toList())
-    }
 
 }
