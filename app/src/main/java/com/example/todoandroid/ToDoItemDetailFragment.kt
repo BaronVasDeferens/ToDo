@@ -11,9 +11,14 @@ import androidx.lifecycle.ViewModelProviders
 class ToDoItemDetailFragment : DialogFragment() {
 
     private lateinit var toDoItem: ToDoItem
+    private lateinit var listener: OnToDoItemCreatedListener
 
     fun setData(toDoItem: ToDoItem) {
         this.toDoItem = toDoItem
+    }
+
+    fun setOnToDoItemCreatedListener(listener: OnToDoItemCreatedListener) {
+        this.listener = listener
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -26,7 +31,7 @@ class ToDoItemDetailFragment : DialogFragment() {
 
         detailView.findViewById<Button>(R.id.completeTaskButton).setOnClickListener {
             toDoItem.markCompleted()
-//            toDoItemViewModel.addOrUpdateToDoItem(toDoItem)
+            listener.onNewItemCreated(toDoItem)
             dismiss()
         }
 

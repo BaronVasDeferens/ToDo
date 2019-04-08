@@ -30,6 +30,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
     private fun showItemDetailFragment(toDoItem: ToDoItem) {
         val detailFragment = ToDoItemDetailFragment()
         detailFragment.setData(toDoItem)
+        detailFragment.setOnToDoItemCreatedListener(this)
         detailFragment.show(supportFragmentManager, "derp")
     }
 
@@ -45,7 +46,6 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
 
             val mainDisplay = findViewById<LinearLayout>(R.id.mainDisplay)
 
-            // TODO removing all is unnecessary...
             mainDisplay.removeAllViews()
 
             toDoItemViewModel.toDoItems.value
@@ -55,11 +55,11 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
                     val listView = toDoView.getListView(this, mainDisplay)
 
                     listView.setOnClickListener {
-                            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                            vibrator.vibrate(200)
-                            showItemDetailFragment(toDoItem)
-                            true
-                        }
+                        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                        vibrator.vibrate(200)
+                        showItemDetailFragment(toDoItem)
+                        true
+                    }
 
                     listView.findViewById<LinearLayout>(R.id.taskSecondaryLayout)
                         .setOnClickListener {
@@ -74,10 +74,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
 
         // Watch the list of items and update the views as they change
         toDoItemViewModel.toDoItems.observe(this, toDoListObserver)
-    }
 
-    override fun onStart() {
-        super.onStart()
 
         // RxJava
         // Fires a regularly repeating request to the server for data
@@ -104,6 +101,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
 
     }
 
+
     private fun parseData(data: String): List<ToDoItem> {
         return Json.parse(ToDoItem.serializer().list, data)
     }
@@ -121,15 +119,16 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
     }
 
     override fun onNewItemCreated(newItem: ToDoItem) {
-        toDoItemViewModel.addOrUpdateToDoItem(newItem)
-        toDoItemViewModel.postUpdate()
-        sendDataToServer(newItem)
+        synchronized(toDoItemViewModel) {
+            toDoItemViewModel.addOrUpdateToDoItem(newItem)
+            toDoItemViewModel.postUpdate()
+            sendDataToServer()
+        }
     }
 
-    fun sendDataToServer(newItem: ToDoItem) {
+    fun sendDataToServer() {
         Executors.newSingleThreadExecutor()!!.execute {
             synchronized(toDoItemViewModel) {
-                toDoItemViewModel.addOrUpdateToDoItem(newItem)
                 val socket = Socket("192.168.1.7", 12322)
                 val outputStream = socket.getOutputStream()
                 val payloadContent = Json.stringify(ToDoItem.serializer().list, toDoItemViewModel.toDoItems.value!!)

@@ -6,8 +6,9 @@ import androidx.lifecycle.ViewModel
 
 class ToDoItemViewModel : ViewModel() {
 
-    val urgencyValueMap = HashMap<ToDoItem.TaskUrgency, Int>()
     private val idToItemMap = HashMap<String, ToDoItem>()
+    val urgencyValueMap = HashMap<ToDoItem.TaskUrgency, Int>()
+
 
     val toDoItems = MutableLiveData<List<ToDoItem>>()
 
@@ -28,12 +29,12 @@ class ToDoItemViewModel : ViewModel() {
     fun updateValues(newList: List<ToDoItem>) {
 
         var requiresUpdate = false
-        for(item: ToDoItem in newList) {
+        for (item: ToDoItem in newList) {
             // careful! short-circuit! put method first
             requiresUpdate = addOrUpdateToDoItem(item) || requiresUpdate
         }
 
-        if (requiresUpdate){
+        if (requiresUpdate) {
             postUpdate()
         }
     }
@@ -45,17 +46,15 @@ class ToDoItemViewModel : ViewModel() {
      */
     fun addOrUpdateToDoItem(newItem: ToDoItem): Boolean {
 
-        val existingItem = idToItemMap[newItem.taskId]
+        val existingItem: ToDoItem? = idToItemMap[newItem.taskId]
 
         if (existingItem == null) {
             addItem(newItem)
             println(">>> adding: ${newItem.taskName}")
             return true
-        } else if (newItem != existingItem) {
-            if (newItem.completedMillis > existingItem.completedMillis) {
-                addItem(newItem)
-                return true
-            }
+        } else if (newItem.completedMillis > existingItem.completedMillis) {
+            addItem(newItem)
+            return true
         }
 
         return false
