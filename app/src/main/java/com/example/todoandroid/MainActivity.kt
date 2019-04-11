@@ -27,16 +27,22 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
 
     private lateinit var toDoItemViewModel: ToDoItemViewModel
 
+    private var connectToServer = false
+
     private lateinit var dispo: Disposable
 
     private val updateObservable = Observable.create<String> { subscriber ->
-        Executors.newSingleThreadScheduledExecutor()!!.scheduleAtFixedRate({
-            val socket = Socket("192.168.1.7", 12321)
-            val inputReader = socket.getInputStream()
-            subscriber.onNext(inputReader.readBytes().toString(Charset.defaultCharset()))
-            socket.close()
-        }, 0, 1, TimeUnit.SECONDS)
-    }.subscribeOn(Schedulers.io())
+
+            while (true) {
+                if (connectToServer) {
+                    val socket = Socket("192.168.1.7", 12321)
+                    subscriber.onNext(socket.getInputStream().readBytes().toString(Charset.defaultCharset()))
+                    socket.close()
+                }
+                Thread.sleep(1000)
+            }
+
+    }   .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .doOnNext {
             synchronized(toDoItemViewModel) {
@@ -50,7 +56,8 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
 
         }
 
-    // Observer on the ViewModel/LiveData
+
+// Observer on the ViewModel/LiveData
     // Updates the UI when changes to the data are detected
     private val toDoListObserver = Observer<Boolean> {
 
@@ -90,21 +97,18 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
         setContentView(R.layout.activity_main)
 
         toDoItemViewModel = ViewModelProviders.of(this).get(ToDoItemViewModel::class.java)
-
+        toDoItemViewModel.updateRequired.observe(this, toDoListObserver)
+        updateObservable.subscribe()
     }
 
     override fun onResume() {
         super.onResume()
-        println(">>> onResume...")
-        // Watch the list of items and update the views as they change
-        toDoItemViewModel.updateRequired.observe(this, toDoListObserver)
-        dispo = updateObservable.subscribe()
+        connectToServer = true
     }
 
     override fun onStop() {
-        println(">>> onStop...")
         super.onStop()
-        dispo.dispose()     // FIXME: this doesn't actually stop the Observable (or rather, the thread inside)
+        connectToServer = false
 
     }
 
