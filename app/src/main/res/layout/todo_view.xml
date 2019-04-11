@@ -50,7 +50,7 @@
                     android:textStyle="bold"/>
 
             <TextView
-                    android:id="@+id/taskCreatedDisplay"
+                    android:id="@+id/taskCreatedLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/task_created_time_default"

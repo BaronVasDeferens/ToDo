@@ -3,7 +3,6 @@ package com.example.todoandroid
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.text.format.DateFormat
-import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +10,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 private const val taskUrgencyHigh = R.color.red
 private const val taskUrgencyMedium = R.color.gold
@@ -30,7 +30,7 @@ class ToDoView(private val toDoItem: ToDoItem) {
         val taskDetailDisplay = myListView.findViewById<TextView>(R.id.taskDetailDisplay)
         taskDetailDisplay.text = toDoItem.taskDetail
 
-        val timeView = myListView.findViewById<TextView>(R.id.taskCreatedDisplay)
+        val timeView = myListView.findViewById<TextView>(R.id.taskCreatedLabel)
         val dateTime = DateFormat.format("yyyy-MM-dd hh:mm", Date(toDoItem.createdMillis)).toString()
         val composed = context.resources.getString(R.string.task_created_time_default) + " " + dateTime
         timeView.text =  composed
@@ -55,14 +55,31 @@ class ToDoView(private val toDoItem: ToDoItem) {
 
     fun getDetailView(context: Context): View {
         val inflater = LayoutInflater.from(context)
-        val detailView: View = inflater.inflate(R.layout.todo_detail_view, null, false)
+        val detailView: View = inflater.inflate(R.layout.todo_view_detail, null, false)
 
         val taskName = detailView.findViewById<TextView>(R.id.taskNameDisplay)
         taskName.text = toDoItem.taskName
         taskName.background = getUrgencyColor(context, toDoItem.taskUrgency)
 
         val dateTime = DateFormat.format("yyyy-MM-dd hh:mm", Date(toDoItem.createdMillis)).toString()
-        detailView.findViewById<TextView>(R.id.taskCreatedDisplay).text = dateTime
+        detailView.findViewById<TextView>(R.id.taskCreatedValue).text = dateTime
+
+        if (isComplete()) {
+            // Complete: sho how long it took to complete
+            val millisDifference = toDoItem.completedMillis - toDoItem.createdMillis
+            val daysDifference = TimeUnit.DAYS.convert(millisDifference, TimeUnit.MILLISECONDS)
+            val daysDifferenceLabel = "$daysDifference DAYS"
+            detailView.findViewById<TextView>(R.id.taskAgeValue).text = daysDifferenceLabel
+            detailView.findViewById<TextView>(R.id.taskAgeLabel).text = context.resources.getString(R.string.completedIn)
+
+        } else {
+            // Not complete: show how long the task has been in progress
+            val millisDifference = System.currentTimeMillis() - toDoItem.createdMillis
+            val daysDifference = TimeUnit.DAYS.convert(millisDifference, TimeUnit.MILLISECONDS)
+            val daysDifferenceLabel = "$daysDifference DAYS"
+            detailView.findViewById<TextView>(R.id.taskAgeValue).text = daysDifferenceLabel
+
+        }
 
         detailView.findViewById<TextView>(R.id.taskDetailDisplay).text = toDoItem.taskDetail
 
@@ -75,5 +92,9 @@ class ToDoView(private val toDoItem: ToDoItem) {
             ToDoItem.TaskUrgency.MEDIUM -> context.resources.getDrawable(taskUrgencyMedium, null)
             ToDoItem.TaskUrgency.LOW -> context.resources.getDrawable(taskUrgencyLow, null)
         }
+    }
+
+    private fun isComplete(): Boolean {
+        return toDoItem.completedMillis > 0
     }
 }
