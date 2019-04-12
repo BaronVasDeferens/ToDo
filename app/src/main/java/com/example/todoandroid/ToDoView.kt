@@ -64,8 +64,8 @@ class ToDoView(private val toDoItem: ToDoItem) {
         val dateTime = DateFormat.format("yyyy-MM-dd hh:mm", Date(toDoItem.createdMillis)).toString()
         detailView.findViewById<TextView>(R.id.taskCreatedValue).text = dateTime
 
-        if (isComplete()) {
-            // Complete: sho how long it took to complete
+        if (toDoItem.isComplete()) {
+            // Complete: show how long the item  took to complete
             val millisDifference = toDoItem.completedMillis - toDoItem.createdMillis
             val daysDifference = TimeUnit.DAYS.convert(millisDifference, TimeUnit.MILLISECONDS)
             val daysDifferenceLabel = "$daysDifference DAYS"
@@ -94,7 +94,4 @@ class ToDoView(private val toDoItem: ToDoItem) {
         }
     }
 
-    private fun isComplete(): Boolean {
-        return toDoItem.completedMillis > 0
-    }
 }

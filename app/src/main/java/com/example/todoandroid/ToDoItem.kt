@@ -26,8 +26,13 @@ data class ToDoItem(
     }
 
     fun markCompleted() {
-        completedMillis = System.currentTimeMillis()
-        println(">>> task $taskName COMPLETE ON $completedMillis")
+        if (completedMillis == 0L) {
+            completedMillis = System.currentTimeMillis()
+        }
+    }
+
+    fun isComplete(): Boolean {
+        return completedMillis > 0
     }
 
 

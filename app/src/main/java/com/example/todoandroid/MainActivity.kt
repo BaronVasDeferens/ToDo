@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Vibrator
 import android.text.format.DateFormat
+import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -63,28 +64,42 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
 
         val mainDisplay = findViewById<LinearLayout>(R.id.mainDisplay)
         mainDisplay.removeAllViews()
-        toDoItemViewModel.getToDoItems()
-            ?.sortedWith(compareBy { toDoItemViewModel.urgencyValueMap[it.taskUrgency] })
-            ?.forEach { toDoItem ->
-                val toDoView = ToDoView(toDoItem)
-                val listView = toDoView.getListView(this, mainDisplay)
+    toDoItemViewModel.getToDoItems()
+        .sortedWith(compareBy { toDoItemViewModel.urgencyValueMap[it.taskUrgency] })
+        .forEach { toDoItem ->
+            val toDoView = ToDoView(toDoItem)
+            val listView = toDoView.getListView(this, mainDisplay)
 
-                listView.setOnClickListener {
-                    val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                    vibrator.vibrate(200)
-                    showItemDetailFragment(toDoItem)
-                    true
-                }
-
-                listView.findViewById<LinearLayout>(R.id.taskSecondaryLayout)
-                    .setOnClickListener {
+            listView.setOnTouchListener { _, event ->
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
                         val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                        vibrator.vibrate(500)
+                        vibrator.vibrate(100)
+                        showItemDetailFragment(toDoItem)
                         true
                     }
-
-                mainDisplay.addView(listView)
+                    else -> {
+                        false
+                    }
+                }
             }
+
+            listView.findViewById<View>(R.id.taskSecondaryLayout)
+                .setOnTouchListener { v, event ->
+                    when (event.action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                            vibrator.vibrate(500)
+                            true
+                        }
+                        else -> {
+                            false
+                        }
+                    }
+                }
+
+            mainDisplay.addView(listView)
+        }
     }
 
 
