@@ -7,40 +7,27 @@
         android:layout_height="match_parent"
         tools:context=".MainActivity">
 
-    <LinearLayout
-            android:id="@+id/filterBar"
-            android:layout_width="match_parent"
+    <TextView
+            android:id="@+id/lastUpdated"
+            android:text="@string/lastSync"
+            android:textStyle="bold"
+            android:textSize="15dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            android:layout_marginBottom="8dp"
-            app:layout_constraintBottom_toTopOf="@+id/scrollArea"
-            android:layout_marginTop="16dp">
-
-
-        <TextView
-                android:id="@+id/lastUpdated"
-                android:text="@string/lastSync"
-                android:textStyle="bold"
-                android:textSize="15dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-    </LinearLayout>
+            android:layout_marginStart="16dp" android:layout_marginTop="16dp"
+            app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toEndOf="parent"
+    />
 
     <ScrollView
             android:id="@+id/scrollArea"
             android:layout_width="0dp"
             android:layout_height="0dp"
 
-            app:layout_constraintTop_toBottomOf="@+id/filterBar"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/addItemButton">
+            app:layout_constraintBottom_toTopOf="@+id/addItemButton"
+            app:layout_constraintTop_toTopOf="@+id/guideline3">
         <LinearLayout
                 android:id="@+id/mainDisplay"
                 android:layout_width="match_parent"
@@ -63,6 +50,27 @@
             app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
     />
+    <Spinner
+            android:id="@+id/filterByTaskType"
+            android:layout_width="175dp"
+            android:layout_height="20dp"
+            android:background="@color/blue_light"
+            android:layout_marginTop="7dp"
+            app:layout_constraintTop_toBottomOf="@+id/filterTypeLabel" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="16dp"/>
+
+
+    <android.support.constraint.Guideline android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                          android:id="@+id/guideline3" app:layout_constraintGuide_begin="132dp"
+                                          android:orientation="horizontal"/>
+    <TextView
+            android:text="@string/filterByTask"
+            android:layout_width="59dp"
+            android:layout_height="19dp"
+            android:id="@+id/filterTypeLabel"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="62dp" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="16dp"/>
 
 
 </android.support.constraint.ConstraintLayout>

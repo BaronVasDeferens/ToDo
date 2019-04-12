@@ -38,7 +38,7 @@ class ToDoItemViewModel : ViewModel() {
             if (existingItem == null) {
                 addItem(item)
                 println(">>> adding: ${item.taskName}")
-            } else if (item.completedMillis > existingItem.completedMillis) {
+            } else if (item.lastModifiedMillis > existingItem.lastModifiedMillis) {
                 addItem(item)
             }
         }

@@ -14,5 +14,7 @@
     <string name="completedIn">Completed In:</string>
     <string name="addItemAndNext">Add Another</string>
     <string name="cancel">Cancel</string>
-    <string name="taskCompleteButtonLabel">TASK COMPLETE</string>
+    <string name="taskCompleteButtonLabel">Task Complete</string>
+    <string name="taskUndoCompleteButtonLabel">Incomplete</string>
+    <string name="filterByTask">Filter By:</string>
 </resources>

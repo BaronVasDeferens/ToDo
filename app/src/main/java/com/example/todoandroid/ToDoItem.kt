@@ -11,7 +11,8 @@ data class ToDoItem(
     val taskType: TaskType = TaskType.TASK,
     val taskUrgency: TaskUrgency = TaskUrgency.MEDIUM,
     val createdMillis: Long,
-    var completedMillis: Long = 0L
+    var completedMillis: Long = 0L,
+    var lastModifiedMillis: Long = 0L
 ) {
 
     enum class TaskType {
@@ -25,10 +26,14 @@ data class ToDoItem(
         HIGH
     }
 
-    fun markCompleted() {
-        if (completedMillis == 0L) {
-            completedMillis = System.currentTimeMillis()
+    fun toggleCompletion() {
+        completedMillis = if (completedMillis == 0L) {
+            System.currentTimeMillis()
+        } else {
+            0L
         }
+        lastModifiedMillis = System.currentTimeMillis()
+        println(">>> $taskName: Complete? ${isComplete()}")
     }
 
     fun isComplete(): Boolean {

@@ -6,8 +6,7 @@ import android.os.Vibrator
 import android.text.format.DateFormat
 import android.view.MotionEvent
 import android.view.View
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -15,6 +14,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
 import java.net.Socket
@@ -26,24 +26,23 @@ import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
 
+    private var taskTypeFilter: ToDoItem.TaskType? = ToDoItem.TaskType.SHOPPING
+
     private lateinit var toDoItemViewModel: ToDoItemViewModel
-
     private var connectToServer = false
-
-    private lateinit var dispo: Disposable
 
     private val updateObservable = Observable.create<String> { subscriber ->
 
-            while (true) {
-                if (connectToServer) {
-                    val socket = Socket("192.168.1.7", 12321)
-                    subscriber.onNext(socket.getInputStream().readBytes().toString(Charset.defaultCharset()))
-                    socket.close()
-                }
-                Thread.sleep(1000)
+        while (true) {
+            if (connectToServer) {
+                val socket = Socket("192.168.1.7", 12321)
+                subscriber.onNext(socket.getInputStream().readBytes().toString(Charset.defaultCharset()))
+                socket.close()
             }
+            Thread.sleep(1000)
+        }
 
-    }   .subscribeOn(Schedulers.io())
+    }.subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .doOnNext {
             synchronized(toDoItemViewModel) {
@@ -52,59 +51,60 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
             updateLastUpdatedTime(System.currentTimeMillis())
         }
         .doOnDispose {
-            println(">>> All done...") }
+            println(">>> All done...")
+        }
         .doOnError {
 
         }
 
 
-// Observer on the ViewModel/LiveData
+    // Observer on the ViewModel/LiveData
     // Updates the UI when changes to the data are detected
     private val toDoListObserver = Observer<Boolean> {
 
         val mainDisplay = findViewById<LinearLayout>(R.id.mainDisplay)
         mainDisplay.removeAllViews()
-    toDoItemViewModel.getToDoItems()
-        .sortedWith(compareBy { toDoItemViewModel.urgencyValueMap[it.taskUrgency] })
-        .forEach { toDoItem ->
-            val toDoView = ToDoView(toDoItem)
-            val listView = toDoView.getListView(this, mainDisplay)
-
-            listView.setOnTouchListener { _, event ->
-                when (event.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                        vibrator.vibrate(100)
-                        showItemDetailFragment(toDoItem)
-                        true
-                    }
+        toDoItemViewModel.getToDoItems()
+            .filter {
+                when (taskTypeFilter) {
+                    null -> true
                     else -> {
-                        false
+                        it.taskType == taskTypeFilter
                     }
                 }
             }
+            .sortedWith(compareBy { toDoItemViewModel.urgencyValueMap[it.taskUrgency] })
+            .forEach { toDoItem ->
+                val toDoView = ToDoView(toDoItem)
+                val listView = toDoView.getListView(this, mainDisplay)
 
-            listView.findViewById<View>(R.id.taskSecondaryLayout)
-                .setOnTouchListener { v, event ->
-                    when (event.action) {
-                        MotionEvent.ACTION_DOWN -> {
-                            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                            vibrator.vibrate(500)
-                            true
-                        }
-                        else -> {
-                            false
-                        }
-                    }
+                listView.setOnLongClickListener { view ->
+                    val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                    vibrator.vibrate(100)
+                    showItemDetailFragment(toDoItem)
+                    true
                 }
 
-            mainDisplay.addView(listView)
-        }
+                listView.findViewById<View>(R.id.taskSecondaryLayout)
+                    .setOnTouchListener { v, event ->
+                        when (event.action) {
+                            MotionEvent.ACTION_DOWN -> {
+                                val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                                vibrator.vibrate(500)
+                                true
+                            }
+                            else -> {
+                                false
+                            }
+                        }
+                    }
+
+                mainDisplay.addView(listView)
+            }
     }
 
 
     // TODO configuration page
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,6 +114,31 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
         toDoItemViewModel = ViewModelProviders.of(this).get(ToDoItemViewModel::class.java)
         toDoItemViewModel.updateRequired.observe(this, toDoListObserver)
         updateObservable.subscribe()
+
+        val taskTypeList = ToDoItem.TaskType.values().map { it.name }.toMutableList()
+        taskTypeList.add("ALL")
+        val taskTypeAdapter =
+            ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, taskTypeList)
+        val filterTaskTypeSpinner = findViewById<Spinner>(R.id.filterByTaskType)
+        filterTaskTypeSpinner.adapter = taskTypeAdapter
+        filterTaskTypeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+
+                taskTypeFilter =
+                    try {
+                        ToDoItem.TaskType.valueOf(parent?.selectedItem.toString())
+                    } catch (e: Exception) {
+                        null
+                    }
+                toDoItemViewModel.updateRequired.postValue(true)
+            }
+
+        }
+
     }
 
     override fun onResume() {

@@ -28,8 +28,15 @@ class ToDoItemDetailFragment : DialogFragment() {
             dismiss()
         }
 
-        detailView.findViewById<Button>(R.id.completeTaskButton).setOnClickListener {
-            toDoItem.markCompleted()
+        val taskCompleteButton = detailView.findViewById<Button>(R.id.completeTaskButton)
+
+        taskCompleteButton.text = when (toDoItem.isComplete()) {
+            true -> resources.getString(R.string.taskUndoCompleteButtonLabel)
+            false -> resources.getString(R.string.taskCompleteButtonLabel)
+        }
+
+        taskCompleteButton.setOnClickListener {
+            toDoItem.toggleCompletion()
             listener.onNewItemCreated(toDoItem)
             dismiss()
         }
@@ -41,6 +48,6 @@ class ToDoItemDetailFragment : DialogFragment() {
             builder.create()
         } ?: throw IllegalStateException("AW FUCK")
     }
-
-
 }
+
+
