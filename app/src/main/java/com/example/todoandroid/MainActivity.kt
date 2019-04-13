@@ -32,12 +32,16 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
     private var connectToServer = false
 
     private val updateObservable = Observable.create<String> { subscriber ->
-
+        println(">>> Starting server comms...")
         while (true) {
             if (connectToServer) {
-                val socket = Socket("192.168.1.7", 12321)
-                subscriber.onNext(socket.getInputStream().readBytes().toString(Charset.defaultCharset()))
-                socket.close()
+                try {
+                    val socket = Socket("192.168.1.7", 12321)
+                    subscriber.onNext(socket.getInputStream().readBytes().toString(Charset.defaultCharset()))
+                    socket.close()
+                } catch (e: java.lang.Exception) {
+                    println(">>> Oopsie-daisy! $e")
+                }
             }
             Thread.sleep(1000)
         }
@@ -54,7 +58,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
             println(">>> All done...")
         }
         .doOnError {
-
+            println(">>> Uh-oh! ${it.message}")
         }
 
 
@@ -115,10 +119,13 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
         toDoItemViewModel.updateRequired.observe(this, toDoListObserver)
         updateObservable.subscribe()
 
+        // Populate the task filter
         val taskTypeList = ToDoItem.TaskType.values().map { it.name }.toMutableList()
         taskTypeList.add("ALL")
+        taskTypeList.sort()
+
         val taskTypeAdapter =
-            ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, taskTypeList)
+            ArrayAdapter<String>(this, R.layout.spinner_item_custom, taskTypeList)
         val filterTaskTypeSpinner = findViewById<Spinner>(R.id.filterByTaskType)
         filterTaskTypeSpinner.adapter = taskTypeAdapter
         filterTaskTypeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -183,11 +190,16 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
     fun sendDataToServer() {
         Executors.newSingleThreadExecutor()!!.execute {
             synchronized(toDoItemViewModel) {
-                val socket = Socket("192.168.1.7", 12322)
-                val outputStream = socket.getOutputStream()
-                val payloadContent = Json.stringify(ToDoItem.serializer().list, toDoItemViewModel.getToDoItems())
-                outputStream.write(payloadContent.toByteArray())
-                socket.close()
+                try {
+                    val socket = Socket("192.168.1.7", 12322)
+                    val outputStream = socket.getOutputStream()
+                    val payloadContent = Json.stringify(ToDoItem.serializer().list, toDoItemViewModel.getToDoItems())
+                    outputStream.write(payloadContent.toByteArray())
+                    socket.close()
+                } catch (e: Exception) {
+
+                }
+
             }
         }
     }
