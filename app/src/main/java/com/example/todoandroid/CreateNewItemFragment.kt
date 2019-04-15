@@ -34,12 +34,13 @@ class CreateNewItemFragment : DialogFragment() {
         super.onStart()
 
         val taskTypeList = ToDoItem.TaskType.values().map { it.name }.toMutableList()
+        taskTypeList.sort()
         val taskTypeAdapter =
-            ArrayAdapter<String>(context!!, android.R.layout.simple_spinner_dropdown_item, taskTypeList)
+            ArrayAdapter<String>(context!!, R.layout.spinner_item_custom, taskTypeList)
         myView.findViewById<Spinner>(R.id.selectTaskType).adapter = taskTypeAdapter
 
         val urgencyList = ToDoItem.TaskUrgency.values().map { it.name }.toMutableList()
-        val urgencyAdapter = ArrayAdapter<String>(context!!, android.R.layout.simple_spinner_dropdown_item, urgencyList)
+        val urgencyAdapter = ArrayAdapter<String>(context!!, R.layout.spinner_item_custom, urgencyList)
         myView.findViewById<Spinner>(R.id.selectTaskUrgency).adapter = urgencyAdapter
 
 
