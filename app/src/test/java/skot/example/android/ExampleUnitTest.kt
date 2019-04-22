@@ -1,4 +1,4 @@
-package com.example.todoandroid
+package skot.example.android
 
 import org.junit.Test
 

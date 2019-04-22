@@ -1,4 +1,4 @@
-package com.example.todoandroid
+package skot.example.android
 
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4
