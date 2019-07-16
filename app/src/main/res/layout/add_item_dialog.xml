@@ -74,7 +74,7 @@
     <Button android:id="@+id/addTaskAndDone"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/addItemAndFinish"
+            android:text="@string/done"
             android:layout_marginEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginBottom="16dp"

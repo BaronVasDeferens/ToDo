@@ -173,6 +173,11 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
         detailFragment.show(supportFragmentManager, "derp")
     }
 
+    fun launchSettings(view: View) {
+        val settingsFragment = SettingsFragment()
+        settingsFragment.show(supportFragmentManager, "Settings")
+    }
+
     fun addItem(view: View) {
         val createNewItemFragment = CreateNewItemFragment()
         createNewItemFragment.setOnItemCreatedListener(this)
