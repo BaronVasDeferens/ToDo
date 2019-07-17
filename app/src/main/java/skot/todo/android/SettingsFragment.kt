@@ -35,7 +35,17 @@ class SettingsFragment : DialogFragment() {
     override fun onStart() {
         super.onStart()
 
-        // Setup the "Done" button-- add a task and close the dialog
+        val prefs = activity?.getPreferences(Context.MODE_PRIVATE)
+
+        if (prefs != null) {
+            val ipAddress = prefs.getString(getString(R.string.ipAddress), "192.168.1.7")
+            val port = prefs.getInt(getString(R.string.port), 12321)
+
+            myView.findViewById<EditText>(R.id.editIpAddress).setText(ipAddress)
+            myView.findViewById<EditText>(R.id.editPort).setText(port.toString())
+        }
+
+        // Setup the "Done" button-- capture the values and store them in Shared Prefs
         myView.findViewById<Button>(R.id.doneButton).setOnClickListener {
 
             val ipAddress = myView.findViewById<EditText>(R.id.editIpAddress).text.toString()
@@ -53,9 +63,6 @@ class SettingsFragment : DialogFragment() {
         myView.findViewById<Button>(R.id.cancelButton).setOnClickListener {
             dismiss()
         }
-
     }
-
-
 
 }
