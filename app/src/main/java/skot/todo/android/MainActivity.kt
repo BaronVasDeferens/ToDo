@@ -28,12 +28,14 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
     private lateinit var toDoItemViewModel: ToDoItemViewModel
     private var connectToServer = false
 
+
     private val updateObservable = Observable.create<String> { subscriber ->
         println(">>> Starting server comms...")
         while (true) {
             if (connectToServer) {
                 try {
-                    val socket = Socket("192.168.1.7", 12321)
+
+                    val socket = Socket(getIpAddress(), 12321)
                     subscriber.onNext(socket.getInputStream().readBytes().toString(Charset.defaultCharset()))
                     socket.close()
                 } catch (e: java.lang.Exception) {
@@ -204,5 +206,17 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
 
             }
         }
+    }
+
+    fun getIpAddress(): String {
+
+        val prefs = getPreferences(Context.MODE_PRIVATE)
+
+        if (prefs != null) {
+            return prefs.getString(getString(R.string.ipAddress), "192.168.1.7")!!
+        } else {
+            return "192.168.1.2"
+        }
+
     }
 }
