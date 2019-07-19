@@ -40,9 +40,11 @@ class SettingsFragment : DialogFragment() {
         if (prefs != null) {
             val ipAddress = prefs.getString(getString(R.string.ipAddress), "192.168.1.7")
             val port = prefs.getInt(getString(R.string.port), 12321)
+            val interval = prefs.getInt(getString(R.string.interval), 5)
 
             myView.findViewById<EditText>(R.id.editIpAddress).setText(ipAddress)
             myView.findViewById<EditText>(R.id.editPort).setText(port.toString())
+            myView.findViewById<EditText>(R.id.editInterval).setText(interval.toString())
         }
 
         // Setup the "Done" button-- capture the values and store them in Shared Prefs
@@ -50,10 +52,13 @@ class SettingsFragment : DialogFragment() {
 
             val ipAddress = myView.findViewById<EditText>(R.id.editIpAddress).text.toString()
             val port = myView.findViewById<EditText>(R.id.editPort).text.toString().toInt()
+            val interval = myView.findViewById<EditText>(R.id.editInterval).text.toString().toInt()
 
             val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE)
-            sharedPref!!.edit().putString(getString(R.string.ipAddress), ipAddress)
+            sharedPref!!.edit()
+                .putString(getString(R.string.ipAddress), ipAddress)
                 .putInt(getString(R.string.port), port)
+                .putInt(getString(R.string.interval), interval)
                 .apply()
 
             dismiss()

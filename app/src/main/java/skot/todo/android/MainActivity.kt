@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
                     println(">>> Oopsie-daisy! $e")
                 }
             }
-            Thread.sleep(1000)
+            Thread.sleep((getInterval() * 1000).toLong())
         }
 
     }.subscribeOn(Schedulers.io())
@@ -76,6 +76,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
                     }
                 }
             }
+            .sortedWith(compareBy { it.taskName })
             .sortedWith(compareBy { toDoItemViewModel.urgencyValueMap[it.taskUrgency] })
             .forEach { toDoItem ->
                 val toDoView = ToDoView(toDoItem)
@@ -195,7 +196,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
         Executors.newSingleThreadExecutor()!!.execute {
             synchronized(toDoItemViewModel) {
                 try {
-                    val socket = Socket("192.168.1.7", 12322)
+                    val socket = Socket(getIpAddress(), 12322)
                     val outputStream = socket.getOutputStream()
                     val payloadContent = Json.stringify(ToDoItem.serializer().list, toDoItemViewModel.getToDoItems())
                     outputStream.write(payloadContent.toByteArray())
@@ -212,11 +213,15 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
 
         val prefs = getPreferences(Context.MODE_PRIVATE)
 
-        if (prefs != null) {
-            return prefs.getString(getString(R.string.ipAddress), "192.168.1.7")!!
+        return if (prefs != null) {
+            prefs.getString(getString(R.string.ipAddress), "192.168.1.7")!!
         } else {
-            return "192.168.1.2"
+            "192.168.1.2"
         }
+    }
 
+    fun getInterval(): Int {
+        val prefs = getPreferences(Context.MODE_PRIVATE)
+        return prefs?.getInt(getString(R.string.interval), 5) ?: 5
     }
 }
