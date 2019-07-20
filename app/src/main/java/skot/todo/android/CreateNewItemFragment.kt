@@ -55,7 +55,9 @@ class CreateNewItemFragment : DialogFragment() {
         myView.findViewById<Button>(R.id.addTaskAndContinueButton).setOnClickListener {
             itemCreatedListener.onNewItemCreated(createToDoItem())
             // Clear text fields
-            myView.findViewById<EditText>(R.id.editItemName).setText("")
+            val editItemField = myView.findViewById<EditText>(R.id.editItemName)
+            editItemField.setText("")
+            editItemField.requestFocus()
             myView.findViewById<EditText>(R.id.editItemDesc).setText("")
         }
 
