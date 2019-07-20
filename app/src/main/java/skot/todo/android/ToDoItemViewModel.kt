@@ -3,13 +3,14 @@ package skot.todo.android
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import java.util.concurrent.ConcurrentHashMap
 
 class ToDoItemViewModel : ViewModel() {
     val urgencyValueMap = HashMap<ToDoItem.TaskUrgency, Int>()
 
-    private val expirationMillis = 1 * 60 * 1000
+    private val expirationMillis = 60 * 1000
 
-    private val idToItemMap = HashMap<String, ToDoItem>()
+    private val idToItemMap = ConcurrentHashMap<String, ToDoItem>()
     var updateRequired: MutableLiveData<Boolean> = MutableLiveData()
 
     init {
@@ -25,7 +26,9 @@ class ToDoItemViewModel : ViewModel() {
     }
 
     fun getToDoItems(): List<ToDoItem> {
-        return idToItemMap.values.map { it.copy() }.toList()
+        synchronized(idToItemMap) {
+            return idToItemMap.values.map { it.copy() }.toList()
+        }
     }
 
     /**
@@ -33,22 +36,23 @@ class ToDoItemViewModel : ViewModel() {
      */
     fun addOrUpdateItems(items: List<ToDoItem>) {
 
-        // Clear away expired items
         synchronized(idToItemMap) {
+            // Clear away expired items
+            // Only works thanks to ConcurrentHashMap-- should I not do this?
             idToItemMap.values.forEach {
                 if (isExpired(it)) voidItem(it)
             }
-        }
 
-        for (item in items) {
-            if (!isExpired(item)) {
-                val existingItem: ToDoItem? = idToItemMap[item.taskId]
-                if (existingItem == null) {
-                    println(">>> ADDING NEW ITEM: ${item.taskName}")
-                    addItem(item)
-                } else if (item.lastModifiedMillis > existingItem.lastModifiedMillis) {   // and is not expired (complted + expTime)
-                    println(">>> UPDATING: ${item.taskName}")
-                    addItem(item)
+            for (item in items) {
+                if (!isExpired(item)) {
+                    val existingItem: ToDoItem? = idToItemMap[item.taskId]
+                    if (existingItem == null) {
+                        println(">>> ADDING NEW ITEM: ${item.taskName}")
+                        addItem(item)
+                    } else if (item.lastModifiedMillis > existingItem.lastModifiedMillis) {   // and is not expired (complted + expTime)
+                        println(">>> UPDATING: ${item.taskName}")
+                        addItem(item)
+                    }
                 }
             }
         }

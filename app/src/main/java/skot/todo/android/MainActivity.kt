@@ -32,34 +32,33 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
     private val sendPort = 12322
 
     private val updateObservable = Observable.create<String> { subscriber ->
-        println(">>> Starting server comms...")
         while (true) {
             if (connectToServer) {
                 try {
-
                     val socket = Socket(getIpAddress(), receivePort)
                     subscriber.onNext(socket.getInputStream().readBytes().toString(Charset.defaultCharset()))
                     socket.close()
-                } catch (e: java.lang.Exception) {
-                    println(">>> Oopsie-daisy! $e")
+                } catch (e: Exception) {
+                    subscriber.tryOnError(e)
                 }
             }
-            Thread.sleep((getInterval() * 1000).toLong())
+            try {
+                Thread.sleep((getInterval() * 1000).toLong())
+            } catch (e: Exception){
+                println(e.toString())
+            }
         }
-
     }.subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
         .doOnNext {
-            synchronized(toDoItemViewModel) {
-                toDoItemViewModel.addOrUpdateItems(parseData(it))
-            }
-            updateLastUpdatedTime(System.currentTimeMillis())
+            toDoItemViewModel.addOrUpdateItems(parseData(it))
+            updateLastServerContactTime(System.currentTimeMillis())
         }
         .doOnDispose {
             println(">>> All done...")
         }
         .doOnError {
-            println(">>> Uh-oh! ${it.message}")
+            println(it.toString())
         }
 
 
@@ -92,11 +91,13 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
                 }
 
                 listView.findViewById<View>(R.id.taskSecondaryLayout)
-                    .setOnTouchListener { v, event ->
+                    .setOnTouchListener { _, event ->
                         when (event.action) {
                             MotionEvent.ACTION_DOWN -> {
                                 val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                                 vibrator.vibrate(500)
+                                toDoItem.toggleCompletion()
+                                onNewItemCreated(toDoItem)
                                 true
                             }
                             else -> {
@@ -149,7 +150,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
     override fun onResume() {
         super.onResume()
 
-        // todo: refresh from server
+        // TODO: force immediate refresh from server
 
         connectToServer = true
     }
@@ -164,7 +165,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
         return Json.parse(ToDoItem.serializer().list, data)
     }
 
-    private fun updateLastUpdatedTime(millis: Long) {
+    private fun updateLastServerContactTime(millis: Long) {
         val dateTime = DateFormat.format("yyyy-MM-dd hh:mm:ss", Date(millis)).toString()
         val lastSync = resources.getString(R.string.lastSync) + " " + dateTime
         findViewById<TextView>(R.id.lastUpdated).text = lastSync
@@ -193,7 +194,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
         sendDataToServer()
     }
 
-    fun sendDataToServer() {
+    private fun sendDataToServer() {
         Executors.newSingleThreadExecutor()!!.execute {
             synchronized(toDoItemViewModel) {
                 try {
@@ -203,17 +204,16 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
                     outputStream.write(payloadContent.toByteArray())
                     socket.close()
                 } catch (e: Exception) {
-                    println(e.toString())
+                    println("----------------------------------------------------")
+                    e.printStackTrace()
                 }
-
             }
         }
     }
 
-    fun getIpAddress(): String {
+    private fun getIpAddress(): String {
 
         val prefs = getPreferences(Context.MODE_PRIVATE)
-
         return if (prefs != null) {
             prefs.getString(getString(R.string.ipAddress), "192.168.1.7")!!
         } else {
@@ -221,8 +221,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
         }
     }
 
-
-    fun getInterval(): Int {
+    private fun getInterval(): Int {
         val prefs = getPreferences(Context.MODE_PRIVATE)
         return prefs?.getInt(getString(R.string.interval), 60) ?: 60
     }
