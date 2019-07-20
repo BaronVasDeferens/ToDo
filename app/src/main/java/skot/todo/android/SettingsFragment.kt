@@ -43,7 +43,6 @@ class SettingsFragment : DialogFragment() {
             val interval = prefs.getInt(getString(R.string.interval), 5)
 
             myView.findViewById<EditText>(R.id.editIpAddress).setText(ipAddress)
-            myView.findViewById<EditText>(R.id.editPort).setText(port.toString())
             myView.findViewById<EditText>(R.id.editInterval).setText(interval.toString())
         }
 
@@ -51,13 +50,11 @@ class SettingsFragment : DialogFragment() {
         myView.findViewById<Button>(R.id.doneButton).setOnClickListener {
 
             val ipAddress = myView.findViewById<EditText>(R.id.editIpAddress).text.toString()
-            val port = myView.findViewById<EditText>(R.id.editPort).text.toString().toInt()
             val interval = myView.findViewById<EditText>(R.id.editInterval).text.toString().toInt()
 
             val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE)
             sharedPref!!.edit()
                 .putString(getString(R.string.ipAddress), ipAddress)
-                .putInt(getString(R.string.port), port)
                 .putInt(getString(R.string.interval), interval)
                 .apply()
 

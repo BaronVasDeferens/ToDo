@@ -28,6 +28,8 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
     private lateinit var toDoItemViewModel: ToDoItemViewModel
     private var connectToServer = false
 
+    private val receivePort = 12321
+    private val sendPort = 12322
 
     private val updateObservable = Observable.create<String> { subscriber ->
         println(">>> Starting server comms...")
@@ -35,7 +37,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
             if (connectToServer) {
                 try {
 
-                    val socket = Socket(getIpAddress(), 12321)
+                    val socket = Socket(getIpAddress(), receivePort)
                     subscriber.onNext(socket.getInputStream().readBytes().toString(Charset.defaultCharset()))
                     socket.close()
                 } catch (e: java.lang.Exception) {
@@ -195,7 +197,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
         Executors.newSingleThreadExecutor()!!.execute {
             synchronized(toDoItemViewModel) {
                 try {
-                    val socket = Socket(getIpAddress(), 12322)
+                    val socket = Socket(getIpAddress(), sendPort)
                     val outputStream = socket.getOutputStream()
                     val payloadContent = Json.stringify(ToDoItem.serializer().list, toDoItemViewModel.getToDoItems())
                     outputStream.write(payloadContent.toByteArray())
@@ -219,8 +221,9 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
         }
     }
 
+
     fun getInterval(): Int {
         val prefs = getPreferences(Context.MODE_PRIVATE)
-        return prefs?.getInt(getString(R.string.interval), 5) ?: 5
+        return prefs?.getInt(getString(R.string.interval), 60) ?: 60
     }
 }
