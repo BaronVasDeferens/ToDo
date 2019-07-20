@@ -107,10 +107,6 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
             }
     }
 
-
-    // TODO configuration page
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)

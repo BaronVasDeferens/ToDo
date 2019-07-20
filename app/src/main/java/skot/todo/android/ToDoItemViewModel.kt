@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 class ToDoItemViewModel : ViewModel() {
     val urgencyValueMap = HashMap<ToDoItem.TaskUrgency, Int>()
 
-    private val expirationMillis = 5000
+    private val expirationMillis = 1 * 60 * 1000
 
     private val idToItemMap = HashMap<String, ToDoItem>()
     var updateRequired: MutableLiveData<Boolean> = MutableLiveData()
@@ -30,7 +30,6 @@ class ToDoItemViewModel : ViewModel() {
 
     /**
      * Searches data for an item with a matching item id
-     * Returns true if the new item is inserted or overwrites an existing value
      */
     fun addOrUpdateItems(items: List<ToDoItem>) {
         for (item in items) {
