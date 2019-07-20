@@ -32,22 +32,24 @@ class ToDoItemViewModel : ViewModel() {
      * Searches data for an item with a matching item id
      */
     fun addOrUpdateItems(items: List<ToDoItem>) {
-        for (item in items) {
 
-            if (item.completedMillis > 0L && item.completedMillis + expirationMillis < System.currentTimeMillis()) {
-                println(">>> VOIDING ITEM: ${item.taskName}")
-                voidItem(item)
-                continue
+        // Clear away expired items
+        synchronized(idToItemMap) {
+            idToItemMap.values.forEach {
+                if (isExpired(it)) voidItem(it)
             }
+        }
 
-            val existingItem: ToDoItem? = idToItemMap[item.taskId]
-
-            if (existingItem == null) {
-                println(">>> ADDING NEW ITEM: ${item.taskName}")
-                addItem(item)
-            } else if (item.lastModifiedMillis > existingItem.lastModifiedMillis){   // and is not expired (complted + expTime)
-                println(">>> UPDATING: ${item.taskName}")
-                addItem(item)
+        for (item in items) {
+            if (!isExpired(item)) {
+                val existingItem: ToDoItem? = idToItemMap[item.taskId]
+                if (existingItem == null) {
+                    println(">>> ADDING NEW ITEM: ${item.taskName}")
+                    addItem(item)
+                } else if (item.lastModifiedMillis > existingItem.lastModifiedMillis) {   // and is not expired (complted + expTime)
+                    println(">>> UPDATING: ${item.taskName}")
+                    addItem(item)
+                }
             }
         }
     }
@@ -66,5 +68,8 @@ class ToDoItemViewModel : ViewModel() {
         }
     }
 
+    private fun isExpired(item: ToDoItem): Boolean {
+        return (item.completedMillis > 0L && item.completedMillis + expirationMillis < System.currentTimeMillis())
+    }
 
 }

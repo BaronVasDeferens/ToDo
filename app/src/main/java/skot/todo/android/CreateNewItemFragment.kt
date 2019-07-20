@@ -54,6 +54,9 @@ class CreateNewItemFragment : DialogFragment() {
         // Setup the "Add Another" button-- add the item and keep going
         myView.findViewById<Button>(R.id.addTaskAndContinueButton).setOnClickListener {
             itemCreatedListener.onNewItemCreated(createToDoItem())
+            // Clear text fields
+            myView.findViewById<EditText>(R.id.editItemName).setText("")
+            myView.findViewById<EditText>(R.id.editItemDesc).setText("")
         }
 
         // Setup the "Cancel" button
