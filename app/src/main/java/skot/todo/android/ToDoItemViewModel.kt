@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 class ToDoItemViewModel : ViewModel() {
     val urgencyValueMap = HashMap<ToDoItem.TaskUrgency, Int>()
 
+    private val expirationMillis = 5000
 
     private val idToItemMap = HashMap<String, ToDoItem>()
     var updateRequired: MutableLiveData<Boolean> = MutableLiveData()
@@ -33,12 +34,20 @@ class ToDoItemViewModel : ViewModel() {
      */
     fun addOrUpdateItems(items: List<ToDoItem>) {
         for (item in items) {
+
+            if (item.completedMillis > 0L && item.completedMillis + expirationMillis < System.currentTimeMillis()) {
+                println(">>> VOIDING ITEM: ${item.taskName}")
+                voidItem(item)
+                continue
+            }
+
             val existingItem: ToDoItem? = idToItemMap[item.taskId]
 
             if (existingItem == null) {
+                println(">>> ADDING NEW ITEM: ${item.taskName}")
                 addItem(item)
-                println(">>> adding: ${item.taskName}")
-            } else if (item.lastModifiedMillis > existingItem.lastModifiedMillis) {
+            } else if (item.lastModifiedMillis > existingItem.lastModifiedMillis){   // and is not expired (complted + expTime)
+                println(">>> UPDATING: ${item.taskName}")
                 addItem(item)
             }
         }
@@ -47,6 +56,13 @@ class ToDoItemViewModel : ViewModel() {
     private fun addItem(newItem: ToDoItem) {
         synchronized(idToItemMap) {
             idToItemMap[newItem.taskId] = newItem
+            updateRequired.postValue(true)
+        }
+    }
+
+    private fun voidItem(itemToVoid: ToDoItem) {
+        synchronized(idToItemMap) {
+            idToItemMap.remove(itemToVoid.taskId)
             updateRequired.postValue(true)
         }
     }

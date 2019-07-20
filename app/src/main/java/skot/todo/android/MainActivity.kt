@@ -150,6 +150,9 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
 
     override fun onResume() {
         super.onResume()
+
+        // todo: refresh from server
+
         connectToServer = true
     }
 
@@ -165,8 +168,8 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
 
     private fun updateLastUpdatedTime(millis: Long) {
         val dateTime = DateFormat.format("yyyy-MM-dd hh:mm:ss", Date(millis)).toString()
-        val completedString = resources.getString(R.string.lastSync) + " " + dateTime
-        findViewById<TextView>(R.id.lastUpdated).text = completedString
+        val lastSync = resources.getString(R.string.lastSync) + " " + dateTime
+        findViewById<TextView>(R.id.lastUpdated).text = lastSync
     }
 
     private fun showItemDetailFragment(toDoItem: ToDoItem) {
@@ -202,7 +205,7 @@ class MainActivity : AppCompatActivity(), OnToDoItemCreatedListener {
                     outputStream.write(payloadContent.toByteArray())
                     socket.close()
                 } catch (e: Exception) {
-
+                    println(e.toString())
                 }
 
             }
